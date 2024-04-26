@@ -76,6 +76,34 @@
 </section>
 
 <a href="/venues/{{ venue.id }}/edit"><button class="btn btn-primary btn-lg">Edit</button></a>
+<button id="deleteBtn" data-id="{{ venue.id }}" class="btn btn-primary btn-lg">Delete</button>
+
+
+<script>
+    
+	// Use async/await. Way nicer syntax than promises learned in the course.
+	document.getElementById('deleteBtn').onclick = async function(e){
+		const venueId = e.target.dataset.id;
+		try{
+			const response = await fetch('/venues/' + venueId, {
+            method: 'DELETE'
+        });
+
+			if (!response.ok) {
+				console.error('Failed to delete venue. Server returned:', response.status, response.statusText);
+			} else {
+				// Backend return ok (200) now redirect to homepage
+				window.location.href = '/';
+			}
+
+		} catch (error) {
+			// Network error
+			console.error('Error deleting venue:', error);
+		}
+	}
+
+
+</script>
 
 {% endblock %}
 
