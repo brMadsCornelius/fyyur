@@ -488,7 +488,7 @@ def shows():
       show_data = {
           "venue_id": show.venue_id,
           "venue_name": show.venue_name,
-          "artist_id": show.artist_name,
+          "artist_id": show.artist_id,
           "artist_name": show.artist_name,
           "artist_image_link": show.artist_image_link,
           "start_time": show.start_time.strftime('%Y-%m-%dT%H:%M:%S.000Z')
