@@ -225,35 +225,45 @@ def create_venue_form():
   form = VenueForm()
   return render_template('forms/new_venue.html', form=form)
 
+from forms import VenueForm  # Import your VenueForm class from forms.py
+
 @app.route('/venues/create', methods=['POST'])
 def create_venue_submission():
-  
-  try:
-    # Create new Venue object with form data
-    new_venue = Venue(
-        name=request.form.get('name'),
-        city=request.form.get('city'),
-        state=request.form.get('state'),
-        address=request.form.get('address'),
-        phone=request.form.get('phone'),
-        genres=request.form.getlist('genres'),
-        facebook_link=request.form.get('facebook_link'),
-        image_link=request.form.get('image_link'),
-        website=request.form.get('website_link'),
-        seeking_talent=request.form.get('seeking_talent') == 'y',  # 'y' if checked otherwise None.
-        seeking_description=request.form.get('seeking_description')
-      )
-    db.session.add(new_venue)
-    db.session.commit()
-    flash('Venue ' + request.form['name'] + ' was successfully listed!')
-  except Exception as e:
-    db.session.rollback()
-    flash('An error occurred. Venue ' + request.form['name'] + ' could not be listed.')
-    print(e)
-  finally:
-    db.session.remove()
+    form = VenueForm(request.form, meta={'csrf': False})  # Create form object with form data
+    
+    if form.validate():  # Validate the form
+        try:
+            # Create new Venue object with form data
+            new_venue = Venue(
+                name=form.name.data,
+                city=form.city.data,
+                state=form.state.data,
+                address=form.address.data,
+                phone=form.phone.data,
+                genres=form.genres.data,
+                facebook_link=form.facebook_link.data,
+                image_link=form.image_link.data,
+                website=form.website_link.data,
+                seeking_talent=form.seeking_talent.data == 'y',  
+                seeking_description=form.seeking_description.data
+            )
+            db.session.add(new_venue)
+            db.session.commit()
+            flash('Venue ' + form.name.data + ' was successfully listed!')
+        except Exception as e:
+            db.session.rollback()
+            flash('An error occurred. Venue ' + form.name.data + ' could not be listed.')
+            print(e)
+        finally:
+            db.session.remove()
 
-  return redirect(url_for('index'))  
+        return redirect(url_for('index'))
+    else:
+        # If there are validation errors, display them to the user
+        error_messages = ", ".join([", ".join(errors) for errors in form.errors.values()])
+        flash('Please fix the following errors: ' + error_messages)
+        return render_template('forms/new_venue.html', form=form)
+
   
 # Frontend will send a DELETE request using async/await (promise)
 @app.route('/venues/<int:venue_id>', methods=['DELETE'])
@@ -328,7 +338,7 @@ def show_artist(artist_id):
             show_data = {
                 "venue_id": venue.id,
                 "venue_name": venue.name,
-                "artist_image_link": artist.image_link,
+                "venue_image_link": venue.image_link,
                 "start_time": show.start_time.strftime('%Y-%m-%d %H:%M:%S')
             }
             if show.start_time < datetime.now():
@@ -514,34 +524,45 @@ def create_artist_form():
   form = ArtistForm()
   return render_template('forms/new_artist.html', form=form)
 
+
+from forms import ArtistForm  # Import your ArtistForm class from forms.py
+
 @app.route('/artists/create', methods=['POST'])
 def create_artist_submission():
-
-  try:
-    # Create new artist object with form data
-    new_artist = Artist(
-        name=request.form.get('name'),
-        city=request.form.get('city'),
-        state=request.form.get('state'),
-        phone=request.form.get('phone'),
-        genres=request.form.getlist('genres'),
-        facebook_link=request.form.get('facebook_link'),
-        image_link=request.form.get('image_link'),
-        website=request.form.get('website_link'),
-        seeking_venue=request.form.get('seeking_venue') == 'y',  # 'y' if checked otherwise None.
-        seeking_description=request.form.get('seeking_description')
-      )
-    db.session.add(new_artist)
-    db.session.commit()
-    flash('Artist ' + request.form['name'] + ' was successfully created!')
-  except Exception as e:
-    db.session.rollback()
-    flash('An error occurred. Artist ' + request.form['name'] + ' could not be created.')
-    print(e)
-  finally:
-    db.session.remove()
+    form = ArtistForm(request.form, meta={'csrf': False})  # Create form object with form data
     
-  return redirect(url_for('index'))
+    if form.validate():  # Validate the form
+        try:
+            # Create new artist object with form data
+            new_artist = Artist(
+                name=form.name.data,
+                city=form.city.data,
+                state=form.state.data,
+                phone=form.phone.data,
+                genres=form.genres.data,
+                facebook_link=form.facebook_link.data,
+                image_link=form.image_link.data,
+                website=form.website_link.data,
+                seeking_venue=form.seeking_venue.data == 'y',  
+                seeking_description=form.seeking_description.data
+            )
+            db.session.add(new_artist)
+            db.session.commit()
+            flash('Artist ' + form.name.data + ' was successfully created!')
+        except Exception as e:
+            db.session.rollback()
+            flash('An error occurred. Artist ' + form.name.data + ' could not be created.')
+            print(e)
+        finally:
+            db.session.close()
+
+        return redirect(url_for('index'))
+    else:
+        # If there are validation errors, display them to the user
+        error_messages = ", ".join([", ".join(errors) for errors in form.errors.values()])
+        flash('Please fix the following errors: ' + error_messages)
+        return render_template('forms/new_artist.html', form=form)
+
 
   
 
@@ -587,25 +608,33 @@ def create_shows():
 
 @app.route('/shows/create', methods=['POST'])
 def create_show_submission():
-  
-  try:
-    # Create new Venue object with form data
-    new_show = Show(
-        artist_id=request.form.get('artist_id'),
-        venue_id=request.form.get('venue_id'),
-        start_time=request.form.get('start_time'),
-        )
-    db.session.add(new_show)
-    db.session.commit()
-    flash('Show was successfully listed!')
-  except Exception as e:
-    db.session.rollback()
-    flash('An error occurred. Show could not be listed.')
-    print(e)
-  finally:
-    db.session.remove()
+    form = ShowForm(request.form, meta={'csrf': False})  # Create form object with form data
+    
+    if form.validate():  # Validate the form
+        try:
+            # Create new show object with form data
+            new_show = Show(
+                artist_id=form.artist_id.data,
+                venue_id=form.venue_id.data,
+                start_time=form.start_time.data,
+            )
+            db.session.add(new_show)
+            db.session.commit()
+            flash('Show was successfully listed!')
+        except Exception as e:
+            db.session.rollback()
+            flash('An error occurred. Show could not be listed.')
+            print(e)
+        finally:
+            db.session.close()
 
-  return redirect(url_for('index'))  
+        return redirect(url_for('index'))
+    else:
+        # If there are validation errors, display them to the user
+        error_messages = ", ".join([", ".join(errors) for errors in form.errors.values()])
+        flash('Please fix the following errors: ' + error_messages)
+        return render_template('forms/new_show.html', form=form)
+
 
 @app.errorhandler(404)
 def not_found_error(error):
