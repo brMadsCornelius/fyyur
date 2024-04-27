@@ -397,7 +397,7 @@ def show_artist(artist_id):
 #       upcoming_shows.append({
 #         "venue_id": show.venue_id,
 #         "venue_name": show.venue.name,
-#         "artist_image_link": show.venue.image_link,
+#         "venue_image_link": show.venue.image_link,
 #         "start_time": show.start_time.strftime('%Y-%m-%d %H:%M:%S')
 #       })
 

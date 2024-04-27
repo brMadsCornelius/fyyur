@@ -3,7 +3,17 @@ from flask_wtf import FlaskForm as Form
 from wtforms import StringField, SelectField, SelectMultipleField, DateTimeField, BooleanField
 from wtforms.validators import DataRequired, AnyOf, URL, ValidationError
 from enums import Genre, State
+import re
 
+def is_valid_phone(number):
+    """ Validate phone numbers like:
+    1234567890 - no space
+    123.456.7890 - dot separator
+    123-456-7890 - dash separator
+    123 456 7890 - space separator
+    """
+    regex = re.compile(r'^\(?([0-9]{3})\)?[-. ]?([0-9]{3})[-. ]?([0-9]{4})$')
+    return regex.match(number)
 
 class ShowForm(Form):
     artist_id = StringField(
@@ -55,6 +65,22 @@ class VenueForm(Form):
         'seeking_description'
     )
 
+    def validate_phone(self, field):
+        if not is_valid_phone(field.data):
+            raise ValidationError('Invalid phone number.')
+
+    def validate_genres(self, field):
+        if not set(field.data).issubset(dict(Genre.choices()).keys()):
+            raise ValidationError('Invalid genres.')
+
+    def validate_state(self, field):
+        if field.data not in dict(State.choices()).keys():
+            raise ValidationError('Invalid state.')
+
+    def validate(self, **kwargs):
+        # Use `**kwargs` to match the method's signature in the `FlaskForm` class.
+        return super(VenueForm, self).validate(**kwargs)
+
 
 
 class ArtistForm(Form):
@@ -91,4 +117,20 @@ class ArtistForm(Form):
     seeking_description = StringField(
             'seeking_description'
      )
+    
+    def validate_phone(self, field):
+        if not is_valid_phone(field.data):
+            raise ValidationError('Invalid phone number.')
+
+    def validate_genres(self, field):
+        if not set(field.data).issubset(dict(Genre.choices()).keys()):
+            raise ValidationError('Invalid genres.')
+
+    def validate_state(self, field):
+        if field.data not in dict(State.choices()).keys():
+            raise ValidationError('Invalid state.')
+
+    def validate(self, **kwargs):
+        # Use `**kwargs` to match the method's signature in the `FlaskForm` class.
+        return super(ArtistForm, self).validate(**kwargs)
 
